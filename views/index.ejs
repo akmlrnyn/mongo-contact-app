@@ -1,0 +1,18 @@
+<div class="container mt-3">
+
+    <h3>Data Siswa</h3>
+
+    <% if (students.length < 1) { %>
+    <p>Students data not found</p>
+    <% } %>
+
+    <% students.forEach(student => { %>
+
+    <ul>
+        <li>nama : <%= student.name %></li>
+        <li>email : <%= student.email %> </li>
+    </ul>
+
+    <% }) %>
+
+</div>
