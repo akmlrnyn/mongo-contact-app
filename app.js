@@ -1,5 +1,8 @@
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
+const session = require('express-session');
+const cookieParser = require('cookie-parser');
+const flash = require('connect-flash');
 
 const app = express();
 const port = 3000;
@@ -13,6 +16,18 @@ app.use(expressLayouts);
 app.use(express.urlencoded({
   extended: true,
 }));
+
+// Configure flash
+app.use(cookieParser('secret'));
+app.use(session({
+  cookie: {
+    maxAge: 6000,
+  },
+  secret: 'secret',
+  resave: true,
+  saveUninitialized: true,
+}));
+app.use(flash());
 
 // Home page
 app.get('/', (req, res) => {
@@ -47,14 +62,24 @@ app.get('/about', (req, res) => {
 });
 
 // Contact page
-app.get('/contact', (req, res) => {
-  const contacts = loadContact();
+app.get('/contact', async (req, res) => {
+  const contacts = await Contact.find();
   res.render('contact', {
     contacts,
     layout: 'layouts/main-layout.ejs',
     nama: 'Akmal',
     header: 'ExpressJS - Contact Page',
     msg: req.flash('msg'),
+  });
+});
+
+// Detail contact
+app.get('/contact/:nama', (req, res) => {
+  const contact = Contact.findOne({ nama: req.params.nama });
+  res.render('detail', {
+    contact,
+    layout: 'layouts/main-layout.ejs',
+    header: 'ExpressJS - Contact Page',
   });
 });
 
