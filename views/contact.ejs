@@ -6,9 +6,9 @@
       <a href="/contact/add" class="btn btn-primary mb-2">Tambah data contact</a>
 
       <% if (msg.length !== 0) { %>
-        <div class="alert alert-success" role="alert">
-          <%= msg %>
-        </div>
+      <div class="alert alert-success" role="alert">
+        <%= msg %>
+      </div>
       <% } %>
 
       <table class="table">
@@ -35,8 +35,12 @@
             <td>
               <a href="/contact/<%= contact.nama %>" class="btn btn-success badge rounded"><i
                   class="bi bi-info-circle"></i> Detail</a>
-                  <a href="/contacts/edit/<%= contact.nama %>" class="btn btn-danger badge rounded" onclick="return confirm('Apakah anda yakin?')">Hapus</a>
-                  <a href="" class="btn btn-warning badge rounded">Ubah</a>
+              <form action="/contact?_method=DELETE" method="post" class="d-inline">
+                <input type="hidden" name="nama" value="<%= contact.nama %>">
+                <button type="submit" class="btn btn-danger badge rounded"
+                  onclick="return confirm('Apakah anda yakin?')">Hapus</button>
+              </form>
+              <a href="" class="btn btn-warning badge rounded">Ubah</a>
             </td>
           </tr>
           <% }) %>
