@@ -1,5 +1,8 @@
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
+
+const { body, validationResult, check } = require('express-validator');
+
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const flash = require('connect-flash');
@@ -71,6 +74,44 @@ app.get('/contact', async (req, res) => {
     header: 'ExpressJS - Contact Page',
     msg: req.flash('msg'),
   });
+});
+
+// Add contact data
+app.get('/contact/add', (req, res) => {
+  res.render('add-contact', {
+    title: 'Form tambah data',
+    layout: 'layouts/main-layout',
+  });
+});
+
+// Process the data input
+app.post('/contact', [
+  body('nama').custom(async (value) => {
+    const duplikat = await Contact.findOne({ nama: value });
+    if (duplikat) {
+      throw new Error('Nama sudah ada');
+    }
+    return true;
+  }),
+  check('email', 'Email tidak valid!').isEmail(),
+  check('nohp', 'nohp tidak valid!').isMobilePhone('id-ID'),
+
+], (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    res.render('add-contact', {
+      title: 'Add Contacts',
+      layout: 'layouts/main-layout',
+      errors: errors.array(),
+    });
+  } else {
+    Contact.insertMany(req.body, (error, result) => {
+    // Send Flash Message
+      req.flash('msg', 'Data berhasil ditambahkan!');
+      res.redirect('/contact');
+    });
+  }
 });
 
 // Detail contact
