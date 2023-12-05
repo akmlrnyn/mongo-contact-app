@@ -143,9 +143,61 @@ app.delete('/contact', (req, res) => {
   });
 });
 
-// Detail contact
-app.get('/contact/:nama', (req, res) => {
+// Edit contact data
+app.get('/contact/edit/:nama', (req, res) => {
   const contact = Contact.findOne({ nama: req.params.nama });
+  res.render('./layouts/edit-contact', {
+    title: 'Edit Contacts',
+    layout: 'layouts/main-layout',
+    contact,
+  });
+});
+
+// Process new data input
+app.put('/contact', [
+  body('nama').custom(async (value, { req }) => {
+    const duplikat = await Contact.findOne({ nama: value });
+    if (value !== req.body.oldNama && duplikat) {
+      throw new Error('Nama sudah ada');
+    }
+    return true;
+  }),
+  check('email', 'Email tidak valid!').isEmail(),
+  check('nohp', 'nohp tidak valid!').isMobilePhone('id-ID'),
+
+], (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    // res.send({ errors: errors.ar ray() });
+    res.render('./layouts/edit-contact', {
+      title: 'edit Contacts',
+      layout: 'layouts/main-layout',
+      errors: errors.array(),
+      contact: req.body,
+    });
+  }
+  Contact.updateOne(
+    {
+      _id: req.body._id,
+    },
+    {
+      $set: {
+        nama: req.body.nama,
+        email: req.body.email,
+        nohp: req.body.nohp,
+      },
+    },
+  ).then((result) => {
+    // Send Flash Message
+    req.flash('msg', 'Data berhasil ditambahkan!');
+    res.redirect('/contact');
+  });
+});
+
+// Detail contact
+app.get('/contact/:nama', async(req, res) => {
+  const contact = await Contact.findOne({ nama: req.params.nama });
   res.render('detail', {
     contact,
     layout: 'layouts/main-layout.ejs',
